@@ -1,0 +1,86 @@
+---
+title: "BIOS 721 Midterm"
+author: "Huiyue Li"
+date: "10/7/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
+```
+
+### Question 1
+```{r library}
+library(gapminder)
+library(tidyverse)
+library(knitr)
+library(viridis)
+library(wesanderson)
+gap<-gapminder
+```
+ 
+```{r table}
+table1<-gap%>%
+  filter(year==2002|year==2007)%>%
+  group_by(continent)%>%
+  summarise(median_lifeExp=median(lifeExp))%>%
+  arrange(median_lifeExp) 
+
+kable(table1,caption = "# The median life expectancy in the 2000s (years 2002 and 2007)",align = "c",col.names = c("Continent","Median Life Expectancy"))
+```
+
+<br> 
+
+### Question 2
+```{r scatterplot,fig.height=4,fig.width=6}
+gap2<-gap%>%
+  filter(country=="Denmark"|country=="Peru"|country=="Botswana"|country=="Mongolia")
+gap2$year=as_factor(gap2$year)
+
+a<-ggplot(gap2, aes(x = gdpPercap, y = lifeExp, color=year)) + 
+  geom_point(size=3, alpha=.5) + 
+  xlab("GDP") + ylab("life expectancy") + 
+  ggtitle("# Scatterplot between GDP and life expectancy for four countries")+
+  scale_color_viridis(discrete = TRUE,direction = -1,name="Year")+
+  theme_bw()+
+  facet_wrap(~country)
+
+a
+```
+
+<br> 
+
+### Question 3
+```{r CI plot,fig.height=4,fig.width=6}
+gap3<-gap%>%
+  filter(year==1997)%>%
+  group_by(continent)%>%
+  summarise(mean=mean(pop),sd=sd(pop))%>%
+  mutate(LB=mean-1.96*sd, UB=mean+1.96*sd)
+col = wes_palette("Darjeeling1", 5, type = c("discrete"))
+
+b<-ggplot(gap3,aes(x=continent,y=mean,color=continent))+
+    geom_point(size=2.5)+
+    geom_errorbar(aes(ymin=LB,ymax=UB))+
+    ylab("Population Size")+ xlab("Continent")+
+    ggtitle("# Means and 95% CIs of population size in 1997 by continent")+
+    theme_bw()+
+    theme(legend.position = "none")+ 
+    scale_colour_manual(values=col)
+
+b
+   
+            
+```
+
+<br>
+
+### Question 4
+```{r extreme values}
+gap4<-gap%>%
+  filter(year==2007 )%>%
+  filter(lifeExp<=min(lifeExp) | lifeExp>=max(lifeExp))%>%
+  arrange(lifeExp)%>%
+  select(country,lifeExp) 
+``` 
+The country **`r gap4[1,1]`** has the lowest life expectancy at birth in the year 2007, with the value of **`r round(gap4[1,2],1)`** years. Whereas, the country **`r gap4[2,1]`** has the highest life expectancy at birth in the year 2007, with the value of **`r round(gap4[2,2],1)`** years.

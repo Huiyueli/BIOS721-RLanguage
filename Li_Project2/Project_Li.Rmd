@@ -1,0 +1,143 @@
+---
+title: "Project 2"
+author: "Huiyue Li, Yujia Wang, Lujun Zhang<- Huiyue Li"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r,loadpackage, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(knitr)
+```
+
+### Import both datasets
+```{r, data, message=FALSE}
+# input the two datasets
+encounter<- read_csv("Encounter Level Data.csv")
+patient <- read_csv("Patient Level Data.csv")
+```
+<br>
+
+### Merge the patient level data into the encounter level data
+```{r,merge, message=FALSE}
+# before merging the two datasets, we need to identify the key variable unique in these two tibbles
+# look at the two datasets firstly
+head(encounter)
+head(patient)
+# from the result, we can identify the variable MRN is the key variable
+# merge the patient data into the encounter data using the key variable
+encounter_patient<-merge(encounter,patient,by=c("MRN"))
+```
+<br>
+
+### Re-categorize WBC into a categorical variable
+```{r, re-categorize, message=FALSE}
+# categorize WBC
+WBC1<-"Not Taken"
+WBC1[encounter_patient$WBC<3.2]="Low"
+WBC1[3.2<=encounter_patient$WBC & encounter_patient$WBC<=9.8]="Normal"
+WBC1[9.8<encounter_patient$WBC]="High"
+encounter_patient$WBC<-WBC1
+# we still have NA in WBC, then turn the NA into "Not Taken"
+# use which[] to identify the position of NA in WBC
+NT=which(is.na(encounter_patient$WBC))
+# replace the NA with "Not Taken"
+encounter_patient$WBC[NT]="Not Taken"
+```
+<br>
+
+### print a table of the categorical WBC variable
+```{r, table}
+# obtain the dataframes of the counts and percentages for each category
+count<-data.frame(table(encounter_patient$WBC))
+proportion<-data.frame(prop.table(table(encounter_patient$WBC))*100)
+# combine dataframes and print the table
+WBC_table<-merge(count,proportion,by=c("Var1"))
+kable(WBC_table,col.names = c("WBC","Count","Percentage (%)"),caption = "Table1: for categorical WBC variable",digits = 3,align = "c")
+```
+<br>
+ 
+### Calculate & print a table of the mean BMI for the following MRNs: CI6950, IW9164, HJ8458, & XE4615
+```{r, table2, warning=FALSE,message=FALSE}
+MRNs<-encounter_patient%>%
+# filter the rows required
+  filter(MRN=="CI6950"|MRN=="IW9164"|MRN=="HJ8458"|MRN=="XE4615")%>% 
+  group_by(MRN)%>%
+  summarise(mean=mean(BMI,na.rm = T),.groups="drop_last")
+# print the table
+kable(MRNs,col.names = c("MRN","Mean of BMI"),caption = "Table 2: the mean of BMI for the MRN",digits = 3,align = "c")
+```
+<br>
+
+### Create a table showing how many hospital encounters occurred each year
+```{r, table3, message=FALSE}
+library(lubridate)
+# convert the date into the standard format, and add the year to a new column of the dataframe
+Date<-as.Date(encounter_patient$contact_date,format = '%m/%d/%Y')
+encounter_patient$Year<-year(Date)
+# print the table
+Year_en<-encounter_patient%>%
+  filter(encounter_patient$enc_type=="Hospital Encounter")%>%
+  group_by(Year)%>%
+  summarise(n=n(),.groups="drop_last")
+kable(Year_en, col.names = c("Year","Count"),caption = "Table 3: the number of hospital encounters each year",align = "c")
+
+```
+<br>
+
+### Create & print a table of the counts & percentages of race, financial class, hypertension, congestive heart failure, and diabetes
+```{r,final table,message=FALSE}
+# since the five variables are all from the 'patient' dataframe, then use the 'patient' dataframe to print table (to avoid the replicate rows)
+# for race
+race<-patient%>%
+  group_by(race)%>%
+  summarise(Count1=n(),.groups="drop_last")%>%
+  mutate(Proportion1=prop.table(Count1)*100)
+  colnames(race)<-c("**Classification of Race**","**Count**","**Percentage (%)**")
+
+# for financial class
+financial<-patient%>%
+  group_by(financialclass)%>%
+  summarise(Count2=n(),.groups="drop_last")%>%
+  mutate(Proportion2=prop.table(Count2)*100)
+ colnames(financial)<-c("**Classification of Financialclass**","**Count**","**Percentage (%)**")
+
+# for hypertension
+hyper<-patient%>%
+  group_by(hypertension)%>%
+  summarise(Count3=n(),.groups="drop_last")%>%
+  mutate(Proportion3=prop.table(Count3)*100)
+ colnames(hyper)<-c("**Classification of Hypertension**","**Count**","**Percentage (%)**")
+
+# for congestive heart failure (CHF)
+CHF<-patient%>%
+  group_by(CHF)%>%
+  summarise(Count4=n(),.groups="drop_last")%>%
+  mutate(Proportion4=prop.table(Count4)*100)
+ colnames(CHF)<-c("**Classification of CHF**","**Count**","**Percentage (%)**")
+
+# for diabetes
+diabetes<-patient%>%
+  group_by(diabetes)%>%
+  summarise(Count5=n(),.groups="drop_last")%>%
+  mutate(Proportion5=prop.table(Count5)*100)
+ colnames(diabetes)<-c("**Classification of Diabetes**","**Count**","**Percentage (%)**")
+
+# print the table 
+kable(list(race,financial,hyper,CHF,diabetes),caption = "Table 4: for the following five variables",align = "c",digits = 3)
+  
+```
+<br>
+
+### Create a histogram of the distress score
+```{r, histogram, message=FALSE,warning=FALSE}
+# create the histogram
+qplot(encounter_patient$distress,main = "# Histogram of the distress score",geom = "histogram",binwidth=0.5,fill=I("rosybrown1"),col=I("cornsilk"),xlab = "distress score",ylab = "frequency")
+```
+
+

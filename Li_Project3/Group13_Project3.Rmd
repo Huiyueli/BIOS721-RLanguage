@@ -1,0 +1,97 @@
+---
+title: "Project 3"
+author: "Huiyue Li, Yifeng Tang, Yiyuan Yao<-Group 13"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
+```
+
+```{r packages}
+# load the packages we need to use
+library(tidyverse)
+library(knitr)
+library(here)
+library(lubridate)
+
+# using the here package 
+here::here()
+```
+
+## Plotting
+```{r plot,fig.height=15,fig.width=10}
+# input the dataset
+plot1<-read_csv("plot_data.csv")
+
+# extract the month of each observation and select the relevant columns
+plot2<-plot1%>%
+  mutate(month=month(ymd(plot1$week)))%>%
+  select(3:13)
+
+# reorganize the dataframe by gathering the site, then calculate the mean by month and site
+pp=plot2%>%
+  gather(Site,Numb,-month)%>%
+  group_by(month,Site)%>%summarise(mean=mean(Numb))%>%arrange(Site)
+
+# create a plot illustrating the number of subjects enrolled by month and site
+plotting<-ggplot(pp, aes(x = factor(month), y = mean,color=factor(Site,level=c("Site1","Site2","Site3","Site4","Site5","Site6","Site7","Site8","Site9","Site10")))) + 
+  geom_point(size=3.2,alpha=.75) + 
+  geom_text(aes(label=round(mean,2)),nudge_y=.5,color="black",size=2.6,check_overlap = T)+
+  scale_colour_discrete(name="Site",labels=c("Site 1","Site 2","Site 3","Site 4","Site 5","Site 6","Site 7","Site 8","Site 9","Site 10"))+
+  xlab("Month") + ylab("Numberof enrollment") + ggtitle("# The number of subjects enrolled by month and site")+
+  theme_bw()+theme(legend.position = "bottom")+
+  facet_wrap(~factor(Site,level=c("Site1","Site2","Site3","Site4","Site5","Site6","Site7","Site8","Site9","Site10")),nrow = 5,ncol = 2,scales = "free_x")
+plotting
+```
+
+
+## Program control
+```{r program}
+# input the dataset
+hiv<-read.csv("HIV_data.csv")
+
+
+# create an empty vector for loop results
+hiv1<-NULL
+
+# create a FOR loop to detect the whole dataframe except the column 1
+# determine if there is a "CD4 count<400" using an IF statement
+for(i in 1:nrow(hiv)){
+  for(j in 2:6){
+  if(hiv[i,j]<400){
+  hiv1=rbind(hiv1,c(i,paste("V",j-1,sep=""),hiv[i,j]))
+  }
+  }
+}
+
+# transform hiv1 into a dataframe
+hiv1<-data.frame(hiv1)
+
+# divide the hiv1 dataframe into two parallel groups to avoid page cut
+# the first 26 rows in left part
+hiv_1=hiv1[1:26,] 
+
+# the 26th~51th rows in right part
+hiv_2=hiv1[27:51,] 
+
+# set a vector with NA
+co=c('', '', '') 
+
+# complement the right part(keeping left and right rows the same)
+hiv_3=rbind(hiv_2,co)
+
+# bind the columns all together
+hiv_final<- cbind(hiv_1,bre=rep('|',26),hiv_3)
+
+# hide the NA in the kable
+options(knitr.kable.NA = '')
+
+
+# display the result by kable
+kable(hiv_final,
+      caption = "The patient ID and study visit for patients with CD4 smaller than 400",
+      align = "c",
+      col.names = c("**Patient ID**","**Study Visit**","**CD4 Count**","**|**","**Patient ID**","**Study Visit**","**CD4 Count**"))
+```
+
