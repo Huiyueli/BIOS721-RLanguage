@@ -2,14 +2,15 @@
 Homework for R language
 
 ## Structure
-Hmk1: dplyr
+1. Hmk1: dplyr
 
-Hmk2: kable https://htmlpreview.github.io/?https://github.com/Huiyueli/Rlanguage/blob/main/Li_Project2/Project_Li.html
+2. Hmk2: kable 
+- html version: https://htmlpreview.github.io/?https://github.com/Huiyueli/Rlanguage/blob/main/Li_Project2/Project_Li.html
 
-Mid: dplyr+kable
+3. Mid: dplyr+kable
 
-Hmk3: ggplot2
+4. Hmk3: ggplot2
 
-Hmk4: function+for loop
+5. Hmk4: function+for loop
 
-Final: function+for loop+tidyverse (function for figure and CP)
+6. Final: function+for loop+tidyverse (function for figure and CP)
