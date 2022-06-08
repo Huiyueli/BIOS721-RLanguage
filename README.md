@@ -4,7 +4,7 @@ Homework for R language
 ## Structure
 Hmk1: dplyr
 
-Hmk2: kable
+Hmk2: kable https://htmlpreview.github.io/?https://github.com/Huiyueli/Rlanguage/blob/main/Li_Project2/Project_Li.html
 
 Mid: dplyr+kable
 
