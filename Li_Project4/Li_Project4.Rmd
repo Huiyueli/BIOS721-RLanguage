@@ -1,0 +1,57 @@
+---
+title: "Project 4"
+author: "Huiyue Li, Xinyi Fan, Weiliang Tian, Yujia Wang<- Huiyue Li"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
+```
+
+```{r packages}
+# load the packages we need to use
+library(knitr)
+library(here)
+
+# using the here package 
+here::here()
+```
+<br>
+
+#### Write a function that takes two continuous variables, standardizes each of them, and calculates the Spearman correlation between them for both the un-standardized and standardized variables (the function should return both correlations)
+```{r function}
+# input the data set we require
+dat<-read.csv("P4_dat.csv")
+# check if there is any NA
+sum(is.na(dat))
+# Function of standardization and calculating the Spearman correlation
+Corr<-function(x,y){
+  x_stand=(x-mean(x))/sd(x)    #standardize x
+  y_stand=(y-mean(y))/sd(y)    #standardize y
+  cor_unstand=round(cor(x,y,method = "spearman"),3) #calculate the spearman correlation for un-standardized variables
+  cor_stand=round(cor(x_stand,y_stand,method = "spearman"),3) #calculate the spearman correlation for standardized variables
+  return(c(cor_unstand,cor_stand)) #return both correlations
+}
+```
+<br>
+
+#### Create a table showing the correlations for each pair 
+```{r table}
+# obtain the number of column in the data set
+k=ncol(dat)
+#  create an empty vector for loop results
+table_corr=NULL
+# create a FOR loop to get the spearman correlation of each pair in the data set
+for (i in 1:(k-1)) {
+  for (j in (i+1):k) {
+    table_corr=rbind(table_corr,c(paste("d",i," and d",j,sep = ""),Corr(dat[,i],dat[,j])))
+  }
+}
+# display the result by kable
+kable(table_corr,col.name=c("Pair","Un-standardized","Standardized"),caption="# Spearman correlation between each pair for both Un-standardized and Standardized variables",align="c")
+```
+<br>
+
+#### Comment on the effect of standardization on Spearman correlation
+Based on the result shown in the table, we can easily find that there is no difference between Spearman correlation for un-standardized and standardized variables, which means there is no effect of standardization on Spearman correlation.
+
